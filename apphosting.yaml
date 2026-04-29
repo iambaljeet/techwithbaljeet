@@ -53,3 +53,8 @@ env:
     value: baljeet.fb@gmail.com
     availability:
       - RUNTIME
+
+  - variable: REVALIDATION_SECRET
+    secret: REVALIDATION_SECRET
+    availability:
+      - RUNTIME
