@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'baljeet.fb@gmail.com';
+    }
+
+    // Blog post images and assets: public read, admin write only
+    match /posts/{allPaths=**} {
+      allow read: true;
+      allow write: if isAdmin()
+        && request.resource.size < 10 * 1024 * 1024  // max 10MB
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Deny all other paths by default
+    match /{allPaths=**} {
+      allow read: true;
+      allow write: if false;
+    }
+  }
+}

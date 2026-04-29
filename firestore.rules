@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'baljeet.fb@gmail.com';
+    }
+
+    // Posts: public read for published, admin full access
+    match /posts/{postId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Tags: public read, admin write
+    match /tags/{tagId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Site config: public read, admin write
+    match /site_config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
