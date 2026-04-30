@@ -2,7 +2,11 @@
 
 A high-performance blog platform built with **Next.js 15**, **Firebase**, **Tailwind CSS v4**, and **shadcn/ui**. Features ISR (Incremental Static Regeneration) with on-demand revalidation, a full admin dashboard with WYSIWYG editor, and best-in-class SEO including AI-friendly content.
 
-**Live site**: https://techwithbaljeet.web.app
+| | URL |
+|---|---|
+| **Live site** | https://techwithbaljeet.web.app |
+| **App Hosting** | https://techwithbaljeet--techwithbaljeet.us-central1.hosted.app |
+| **Admin panel** | https://techwithbaljeet.web.app/admin/login _(hidden — use Konami code)_ |
 
 ---
 
@@ -14,9 +18,8 @@ A high-performance blog platform built with **Next.js 15**, **Firebase**, **Tail
 4. [Creating a New Article](#creating-a-new-article)
 5. [Publishing / Editing / Deleting Articles](#publishing--editing--deleting-articles)
 6. [Deploying to Firebase](#deploying-to-firebase)
-7. [Theme System](#theme-system)
-8. [SEO — Automatic, Zero Effort](#seo--automatic-zero-effort)
-9. [ISR & Caching Strategy](#isr--caching-strategy)
+7. [SEO — Automatic, Zero Effort](#seo--automatic-zero-effort)
+8. [ISR & Caching Strategy](#isr--caching-strategy)
 
 ---
 
@@ -38,15 +41,15 @@ techwithbaljeet/
 │   ├── rss.xml/             # RSS 2.0 feed (top 50 posts)
 │   ├── llms.txt/            # AI-friendly index (llmstxt.org)
 │   ├── sitemap.ts           # Dynamic XML sitemap with real lastModified
-│   └── layout.tsx           # Root layout: ThemeProvider + JSON-LD
+│   └── layout.tsx           # Root layout: JSON-LD + fonts
 ├── components/
 │   ├── blog/                # PostCard, PostHero, PostContent (copy btns), PostsGrid
 │   ├── admin/               # TipTapEditor, PostForm, AdminPostsTable
-│   ├── layout/              # Header (theme toggle), Footer
-│   └── ThemeProvider.tsx    # Dark/Light/System theme context
+│   └── layout/              # Header, Footer
 ├── lib/
 │   ├── blog.ts              # Server-side ISR Firestore reads (unstable_cache)
 │   ├── admin-blog.ts        # Client-side CRUD (Firebase JS SDK)
+│   ├── sanitize-content.ts  # Server-only: strips Medium HTML wrappers/title/image
 │   ├── firebase.ts          # Client Firebase SDK
 │   ├── firebase-admin.ts    # Admin SDK (server-only)
 │   └── types.ts             # TypeScript interfaces
@@ -157,20 +160,6 @@ Build takes ~3–5 minutes on Firebase App Hosting. The ISR cache persists acros
 firebase deploy --only firestore --project techwithbaljeet
 firebase deploy --only storage --project techwithbaljeet
 ```
-
----
-
-## Theme System
-
-| Mode | Description |
-|---|---|
-| **Dark** | Default — dark background, indigo accents |
-| **Light** | Light background, adapted colors |
-| **System** | Follows OS `prefers-color-scheme` |
-
-- Toggle in the header (Moon → Sun → Monitor → repeat)
-- Persisted in `localStorage`
-- Anti-FOUC: theme applied before React hydrates (no flash)
 
 ---
 
