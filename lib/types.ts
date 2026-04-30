@@ -12,7 +12,6 @@ export interface Post {
   publishedAt: string | null; // ISO string — safe across JSON cache boundaries
   updatedAt: string | null;   // ISO string
   status: 'published' | 'draft';
-  views: number;
   wordCount: number;
   readTime: number; // minutes
   mediumUrl?: string;

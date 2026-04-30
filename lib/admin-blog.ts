@@ -36,7 +36,6 @@ function docToPost(doc: QueryDocumentSnapshot | DocumentSnapshot): Post {
     publishedAt: toDate(data.publishedAt),
     updatedAt: toDate(data.updatedAt),
     status: data.status ?? 'draft',
-    views: data.views ?? 0,
     wordCount: data.wordCount ?? 0,
     readTime: data.readTime ?? 1,
     mediumUrl: data.mediumUrl,
@@ -127,7 +126,6 @@ export async function adminCreatePost(input: PostInput): Promise<string> {
     author: 'Baljeet Singh',
     publishedAt: input.status === 'published' ? (input.publishedAt ?? serverTimestamp()) : null,
     updatedAt: serverTimestamp(),
-    views: 0,
     wordCount,
     readTime: estimateReadTime(wordCount),
   });

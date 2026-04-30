@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getPostBySlug, getAllPublishedSlugs, getPostsByTag } from '@/lib/blog';
-import { formatDate } from '@/lib/utils';
+import { formatDate, sanitizeContent } from '@/lib/utils';
 import { Clock, ArrowLeft } from 'lucide-react';
 import { PostCard } from '@/components/blog/PostCard';
 import { PostContent } from '@/components/blog/PostContent';
@@ -25,24 +25,36 @@ export async function generateMetadata({
   const post = await getPostBySlug(slug);
   if (!post) return { title: 'Post Not Found' };
 
+  const url = `https://techwithbaljeet.web.app/post/${slug}`;
+
   return {
     title: post.title,
     description: post.excerpt,
+    keywords: post.tags.join(', '),
     authors: [{ name: post.author }],
+    alternates: { canonical: url },
     openGraph: {
       type: 'article',
+      url,
       title: post.title,
       description: post.excerpt,
-      images: post.coverImage ? [{ url: post.coverImage, width: 1200, height: 630 }] : [],
+      siteName: 'TechWithBaljeet',
+      locale: 'en_US',
+      images: post.coverImage
+        ? [{ url: post.coverImage, width: 1200, height: 630, alt: post.title }]
+        : [{ url: '/og-default.png', width: 1200, height: 630, alt: post.title }],
       publishedTime: post.publishedAt ?? undefined,
       modifiedTime: post.updatedAt ?? undefined,
       tags: post.tags,
+      authors: ['https://techwithbaljeet.web.app/#author'],
     },
     twitter: {
       card: 'summary_large_image',
+      site: '@baljeet_dev',
+      creator: '@baljeet_dev',
       title: post.title,
       description: post.excerpt,
-      images: post.coverImage ? [post.coverImage] : [],
+      images: post.coverImage ? [post.coverImage] : ['/og-default.png'],
     },
   };
 }
@@ -57,16 +69,49 @@ export default async function PostPage({
   if (!post) notFound();
 
   // JSON-LD structured data
+  const siteUrl = 'https://techwithbaljeet.web.app';
+  const postUrl = `${siteUrl}/post/${post.slug}`;
+  const readTime = Math.max(1, Math.ceil((post.wordCount || 0) / 200));
+
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.title,
-    description: post.excerpt,
-    image: post.coverImage,
-    datePublished: post.publishedAt ?? undefined,
-    dateModified: post.updatedAt ?? undefined,
-    author: { '@type': 'Person', name: post.author, url: 'https://twitter.com/baljeet_dev' },
-    publisher: { '@type': 'Organization', name: 'TechWithBaljeet', url: 'https://techwithbaljeet.web.app' },
+    '@graph': [
+      {
+        '@type': 'Article',
+        '@id': `${postUrl}/#article`,
+        headline: post.title,
+        description: post.excerpt,
+        image: post.coverImage ?? `${siteUrl}/og-default.png`,
+        url: postUrl,
+        datePublished: post.publishedAt ?? undefined,
+        dateModified: post.updatedAt ?? post.publishedAt ?? undefined,
+        author: {
+          '@type': 'Person',
+          '@id': `${siteUrl}/#author`,
+          name: post.author,
+          url: 'https://twitter.com/baljeet_dev',
+        },
+        publisher: {
+          '@type': 'Organization',
+          '@id': `${siteUrl}/#org`,
+          name: 'TechWithBaljeet',
+          url: siteUrl,
+        },
+        isPartOf: { '@id': `${siteUrl}/#website` },
+        keywords: post.tags.join(', '),
+        wordCount: post.wordCount,
+        timeRequired: `PT${readTime}M`,
+        inLanguage: 'en-US',
+        mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+          { '@type': 'ListItem', position: 2, name: post.title, item: postUrl },
+        ],
+      },
+    ],
   };
 
   // Related posts (same tags, up to 3)
@@ -123,7 +168,7 @@ export default async function PostPage({
                 <span>{formatDate(post.publishedAt)}</span>
                 <span>·</span>
                 <Clock className="h-3 w-3" />
-                <span>{post.readTime} min read</span>
+                <span>{readTime} min read</span>
               </div>
             </div>
           </div>
@@ -144,7 +189,7 @@ export default async function PostPage({
         )}
 
         {/* Content */}
-        <PostContent html={post.content} className="prose" />
+        <PostContent html={sanitizeContent(post.content, post.title, post.coverImage)} className="prose" />
 
         {/* Related posts */}
         {relatedPosts.length > 0 && (

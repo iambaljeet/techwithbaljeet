@@ -27,7 +27,6 @@ function firestoreDocToPost(doc: { id: string; data(): Record<string, unknown> }
     publishedAt: toDate(data.publishedAt),
     updatedAt: toDate(data.updatedAt),
     status: (data.status as 'published' | 'draft') ?? 'published',
-    views: Number(data.views ?? 0),
     wordCount: Number(data.wordCount ?? 0),
     readTime: Number(data.readTime ?? 1),
     mediumUrl: data.mediumUrl as string | undefined,

@@ -18,7 +18,6 @@ function docToPost(doc: FirebaseFirestore.DocumentSnapshot): Post {
     publishedAt: data.publishedAt?.toDate().toISOString() ?? null,
     updatedAt: data.updatedAt?.toDate().toISOString() ?? null,
     status: data.status ?? 'draft',
-    views: data.views ?? 0,
     wordCount: data.wordCount ?? 0,
     readTime: data.readTime ?? 1,
     mediumUrl: data.mediumUrl,

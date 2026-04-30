@@ -1,36 +1,208 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TechWithBaljeet — Developer Blog
 
-## Getting Started
+A high-performance blog platform built with **Next.js 15**, **Firebase**, **Tailwind CSS v4**, and **shadcn/ui**. Features ISR (Incremental Static Regeneration) with on-demand revalidation, a full admin dashboard with WYSIWYG editor, and best-in-class SEO including AI-friendly content.
 
-First, run the development server:
+**Live site**: https://techwithbaljeet.web.app
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Table of Contents
+
+1. [Architecture Overview](#architecture-overview)
+2. [Local Development](#local-development)
+3. [Admin Access (Hidden Login)](#admin-access-hidden-login)
+4. [Creating a New Article](#creating-a-new-article)
+5. [Publishing / Editing / Deleting Articles](#publishing--editing--deleting-articles)
+6. [Deploying to Firebase](#deploying-to-firebase)
+7. [Theme System](#theme-system)
+8. [SEO — Automatic, Zero Effort](#seo--automatic-zero-effort)
+9. [ISR & Caching Strategy](#isr--caching-strategy)
+
+---
+
+## Architecture Overview
+
+```
+techwithbaljeet/
+├── app/
+│   ├── (blog)/              # Public blog routes (ISR, 1 year TTL)
+│   │   ├── page.tsx         # Homepage (hero + post grid)
+│   │   ├── post/[slug]/     # Post detail page
+│   │   ├── search/          # Client-side search with pagination
+│   │   └── tag/[tag]/       # Tag filtered posts
+│   ├── admin/               # Protected admin panel
+│   │   ├── login/           # Firebase email/password login
+│   │   ├── dashboard/       # Post management table
+│   │   └── posts/           # new | [id]/edit
+│   ├── api/revalidate/      # Webhook to invalidate ISR cache
+│   ├── rss.xml/             # RSS 2.0 feed (top 50 posts)
+│   ├── llms.txt/            # AI-friendly index (llmstxt.org)
+│   ├── sitemap.ts           # Dynamic XML sitemap with real lastModified
+│   └── layout.tsx           # Root layout: ThemeProvider + JSON-LD
+├── components/
+│   ├── blog/                # PostCard, PostHero, PostContent (copy btns), PostsGrid
+│   ├── admin/               # TipTapEditor, PostForm, AdminPostsTable
+│   ├── layout/              # Header (theme toggle), Footer
+│   └── ThemeProvider.tsx    # Dark/Light/System theme context
+├── lib/
+│   ├── blog.ts              # Server-side ISR Firestore reads (unstable_cache)
+│   ├── admin-blog.ts        # Client-side CRUD (Firebase JS SDK)
+│   ├── firebase.ts          # Client Firebase SDK
+│   ├── firebase-admin.ts    # Admin SDK (server-only)
+│   └── types.ts             # TypeScript interfaces
+└── public/
+    ├── robots.txt           # Allows all bots incl. AI crawlers
+    └── og-default.png       # Default OG image
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Data flow**:
+- Public pages: Firebase Admin SDK server-side → `unstable_cache` → 1-year ISR
+- On admin writes: `api/revalidate` → `revalidateTag('posts')` → cache busted
+- Client-side (search, load more): Firebase JS SDK directly from browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Local Development
 
-## Learn More
+### Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 20+  
+- Firebase CLI: `npm install -g firebase-tools`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install
+cp .env.local.example .env.local  # add your credentials
+npm run dev
+```
 
-## Deploy on Vercel
+### Environment Variables (`.env.local`)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=techwithbaljeet.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=techwithbaljeet
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=techwithbaljeet.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Server-only — base64 encoded service account JSON
+FIREBASE_SERVICE_ACCOUNT_KEY=<base64>
+```
+
+Encode service account:
+```bash
+base64 -i /path/to/service-account.json | tr -d '\n'
+```
+
+---
+
+## Admin Access (Hidden Login)
+
+The admin panel is not linked publicly. To access:
+
+**Press the Konami code** on any public page:  
+**↑ ↑ ↓ ↓ ← → ← → B A**
+
+This navigates to `/admin/login`.
+
+---
+
+## Creating a New Article
+
+1. Log into the admin panel
+2. Click **"New Post"**
+3. Fill in title, excerpt, cover image (upload), tags, content (TipTap WYSIWYG)
+4. Set **Status** to `Draft` or `Published`
+5. Click **Save**
+
+When saving a published post, the ISR cache is automatically invalidated — changes appear on the live site on the next request.
+
+---
+
+## Publishing / Editing / Deleting Articles
+
+| Action | How |
+|---|---|
+| **Publish draft** | Edit post → change status to Published → Save |
+| **Edit live post** | Dashboard → Edit → Save (cache auto-invalidated) |
+| **Delete post** | Dashboard → Delete → Confirm |
+| **Unpublish** | Edit → change status to Draft → Save |
+
+All admin actions trigger automatic cache invalidation via `api/revalidate`.
+
+---
+
+## Deploying to Firebase
+
+### Full deploy (recommended after code changes)
+
+```bash
+npm run build           # catch TypeScript errors locally first
+firebase deploy --project techwithbaljeet
+```
+
+### Web app only
+
+```bash
+firebase deploy --only apphosting --project techwithbaljeet
+```
+
+Build takes ~3–5 minutes on Firebase App Hosting. The ISR cache persists across code deploys — only admin actions or TTL expiry clear cached pages.
+
+### Rules / indexes only
+
+```bash
+firebase deploy --only firestore --project techwithbaljeet
+firebase deploy --only storage --project techwithbaljeet
+```
+
+---
+
+## Theme System
+
+| Mode | Description |
+|---|---|
+| **Dark** | Default — dark background, indigo accents |
+| **Light** | Light background, adapted colors |
+| **System** | Follows OS `prefers-color-scheme` |
+
+- Toggle in the header (Moon → Sun → Monitor → repeat)
+- Persisted in `localStorage`
+- Anti-FOUC: theme applied before React hydrates (no flash)
+
+---
+
+## SEO — Automatic, Zero Effort
+
+Every article gets the following **without any publisher action**:
+
+| Feature | Detail |
+|---|---|
+| Meta title & description | Post title + excerpt |
+| Open Graph (`og:article`) | Cover image, published/modified time, tags, author |
+| Twitter Card | `summary_large_image` |
+| JSON-LD `Article` | Author, dates, word count, ISO 8601 read time |
+| JSON-LD `BreadcrumbList` | Home > Article |
+| Canonical URL | Per article |
+| Keywords meta | From post tags |
+| XML Sitemap | `/sitemap.xml` with real `lastModified` per post |
+| RSS Feed | `/rss.xml` — valid RSS 2.0, top 50 posts |
+| AI index | `/llms.txt` — llmstxt.org standard, all posts listed |
+| Site JSON-LD | `WebSite` + `SearchAction` + `Person` + `Organization` |
+| robots.txt | Welcomes GPTBot, Claude, Perplexity, Google-Extended |
+
+---
+
+## ISR & Caching Strategy
+
+| Route | TTL | Revalidated by |
+|---|---|---|
+| `/` | 1 year | Any post create/edit/delete |
+| `/post/[slug]` | 1 year | That post edited/deleted |
+| `/tag/[tag]` | 1 year | Post with that tag changes |
+| `/sitemap.xml` | 1 year | Any post change |
+| `/rss.xml` | 1 year | Any post change |
+| `/llms.txt` | 1 year | Any post change |
+| `/search` | No cache | Client-side, always fresh |
