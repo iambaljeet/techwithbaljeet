@@ -18,7 +18,6 @@ function toPost(doc: { id: string; data(): Record<string, unknown> }): Post {
     author: String(d.author ?? 'Baljeet Singh'), publishedAt: toDate(d.publishedAt),
     updatedAt: toDate(d.updatedAt), status: 'published',
     wordCount: Number(d.wordCount ?? 0), readTime: Number(d.readTime ?? 1),
-    mediumUrl: d.mediumUrl as string | undefined,
   };
 }
 

@@ -2,30 +2,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Menu, X, Terminal, Moon, Sun, Monitor } from 'lucide-react';
+import { Menu, X, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/components/ThemeProvider';
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/search', label: 'Search' },
 ];
-
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
-  const Icon = theme === 'light' ? Sun : theme === 'system' ? Monitor : Moon;
-  const label = theme === 'light' ? 'Switch to system theme' : theme === 'system' ? 'Switch to dark theme' : 'Switch to light theme';
-  return (
-    <button
-      onClick={toggleTheme}
-      aria-label={label}
-      title={label}
-      className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all hover:border-primary/40 hover:bg-muted hover:text-foreground"
-    >
-      <Icon className="h-4 w-4" />
-    </button>
-  );
-}
 
 export function Header() {
   const pathname = usePathname();
@@ -44,38 +27,32 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Desktop Nav + Theme Toggle */}
-        <div className="hidden items-center gap-2 md:flex">
-          <nav className="flex items-center gap-1 mr-2">
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  pathname === link.href
-                    ? 'bg-muted text-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <ThemeToggle />
-        </div>
+        {/* Desktop Nav */}
+        <nav className="hidden items-center gap-1 md:flex">
+          {navLinks.map(link => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                pathname === link.href
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
-        {/* Mobile: theme toggle + hamburger */}
-        <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle />
-          <button
-            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-            onClick={() => setOpen(o => !o)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
+        {/* Mobile hamburger */}
+        <button
+          className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+          onClick={() => setOpen(o => !o)}
+          aria-label="Toggle menu"
+        >
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
 
       {/* Mobile nav dropdown */}
@@ -103,3 +80,4 @@ export function Header() {
     </header>
   );
 }
+

@@ -14,7 +14,6 @@ export interface Post {
   status: 'published' | 'draft';
   wordCount: number;
   readTime: number; // minutes
-  mediumUrl?: string;
 }
 
 export interface PostFirestore extends Omit<Post, 'publishedAt' | 'updatedAt'> {

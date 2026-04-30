@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AdminShortcut } from '@/components/AdminShortcut';
-import { ThemeProvider } from '@/components/ThemeProvider';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
@@ -27,8 +26,7 @@ export const metadata: Metadata = {
   verification: {},
 };
 
-// Anti-FOUC: apply theme class BEFORE React hydrates
-const ANTI_FOUC = `(function(){try{var t=localStorage.getItem('theme')||'dark';var r=t==='system'?(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):t;document.documentElement.classList.add(r);}catch(e){}})()`;
+// Anti-FOUC: removed — dark theme is always active, no class switching needed
 
 // Site-wide JSON-LD
 const websiteJsonLd = {
@@ -69,19 +67,16 @@ const websiteJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: ANTI_FOUC }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ThemeProvider>
-          <AdminShortcut />
-          {children}
-        </ThemeProvider>
+        <AdminShortcut />
+        {children}
       </body>
     </html>
   );

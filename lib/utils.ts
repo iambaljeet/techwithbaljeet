@@ -45,35 +45,3 @@ export function estimateReadTime(content: string): number {
   const words = content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(words / 200));
 }
-
-/**
- * Strips duplicate title <h1> and cover image <figure>/<img> that
- * Medium exports embed inside the HTML content body. The post detail
- * page already renders these separately above the content.
- */
-export function sanitizeContent(html: string, title: string, coverImage?: string): string {
-  let result = html;
-
-  // Remove leading <h1> that matches the post title (case-insensitive)
-  const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  result = result.replace(
-    new RegExp(`^\\s*<h1[^>]*>\\s*${escapedTitle}\\s*<\\/h1>`, 'i'),
-    ''
-  );
-  // Also remove any leading <h1> regardless of text (Medium always puts title first)
-  result = result.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>/, '');
-
-  // Remove leading <figure> containing the cover image URL
-  if (coverImage) {
-    const escapedSrc = coverImage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    result = result.replace(
-      new RegExp(`^\\s*<figure[^>]*>[\\s\\S]*?${escapedSrc}[\\s\\S]*?<\\/figure>`),
-      ''
-    );
-  }
-
-  // Remove any leading <figure> that is the very first element (common Medium pattern)
-  result = result.replace(/^\s*<figure[^>]*>[\s\S]*?<\/figure>/, '');
-
-  return result.trim();
-}

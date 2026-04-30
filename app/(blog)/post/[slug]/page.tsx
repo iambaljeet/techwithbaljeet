@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getPostBySlug, getAllPublishedSlugs, getPostsByTag } from '@/lib/blog';
-import { formatDate, sanitizeContent } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
+import { sanitizeContent } from '@/lib/sanitize-content';
 import { Clock, ArrowLeft } from 'lucide-react';
 import { PostCard } from '@/components/blog/PostCard';
 import { PostContent } from '@/components/blog/PostContent';
@@ -189,7 +190,7 @@ export default async function PostPage({
         )}
 
         {/* Content */}
-        <PostContent html={sanitizeContent(post.content, post.title, post.coverImage)} className="prose" />
+        <PostContent html={sanitizeContent(post.content)} className="prose" />
 
         {/* Related posts */}
         {relatedPosts.length > 0 && (

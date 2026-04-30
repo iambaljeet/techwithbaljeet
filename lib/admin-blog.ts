@@ -38,7 +38,6 @@ function docToPost(doc: QueryDocumentSnapshot | DocumentSnapshot): Post {
     status: data.status ?? 'draft',
     wordCount: data.wordCount ?? 0,
     readTime: data.readTime ?? 1,
-    mediumUrl: data.mediumUrl,
   };
 }
 

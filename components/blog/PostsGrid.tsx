@@ -29,7 +29,6 @@ function firestoreDocToPost(doc: { id: string; data(): Record<string, unknown> }
     status: (data.status as 'published' | 'draft') ?? 'published',
     wordCount: Number(data.wordCount ?? 0),
     readTime: Number(data.readTime ?? 1),
-    mediumUrl: data.mediumUrl as string | undefined,
   };
 }
 
