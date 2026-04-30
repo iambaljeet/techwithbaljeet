@@ -46,6 +46,9 @@ export function TipTapEditor({ content, onChange, onImageInsert }: TipTapEditorP
       StarterKit.configure({
         codeBlock: false,
         heading: { levels: [1, 2, 3] },
+        // Disable built-in v3 extensions we configure separately below
+        link: false,
+        underline: false,
       }),
       CodeBlockLowlight.configure({ lowlight, defaultLanguage: 'typescript' }),
       TiptapImage.configure({ inline: false, allowBase64: true }),

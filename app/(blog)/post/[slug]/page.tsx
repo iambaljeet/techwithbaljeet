@@ -6,7 +6,7 @@ import { getPostBySlug, getAllPublishedSlugs, getPostsByTag } from '@/lib/blog';
 import { formatDate } from '@/lib/utils';
 import { Clock, ArrowLeft } from 'lucide-react';
 import { PostCard } from '@/components/blog/PostCard';
-import { PostViews } from '@/components/blog/PostViews';
+import { PostContent } from '@/components/blog/PostContent';
 
 export const revalidate = 31536000;
 export const dynamicParams = true; // SSR new posts not in static params
@@ -127,7 +127,6 @@ export default async function PostPage({
               </div>
             </div>
           </div>
-          <PostViews postId={post.id} slug={post.slug} initialViews={post.views} />
         </div>
 
         {/* Cover image */}
@@ -145,10 +144,7 @@ export default async function PostPage({
         )}
 
         {/* Content */}
-        <div
-          className="prose"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
+        <PostContent html={post.content} className="prose" />
 
         {/* Related posts */}
         {relatedPosts.length > 0 && (
