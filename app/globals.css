@@ -99,9 +99,18 @@ body {
 .prose hr { border-color: var(--border); margin: 2rem 0; }
 .prose figure { margin: 2rem 0; }
 .prose figcaption { text-align: center; color: var(--muted-foreground); font-size: 0.875rem; margin-top: 0.5rem; }
-.prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
-.prose th { background: var(--muted); padding: 0.75rem 1rem; text-align: left; color: var(--foreground); }
-.prose td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+.prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; overflow-x: auto; display: block; }
+.prose table thead tr { background: color-mix(in srgb, var(--primary) 15%, transparent); }
+.prose th { padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: var(--foreground); border: 1px solid var(--border); }
+.prose td { padding: 0.75rem 1rem; border: 1px solid var(--border); }
+.prose tr:nth-child(even) td { background: color-mix(in srgb, var(--muted) 40%, transparent); }
+
+/* TipTap editor table styles */
+.tiptap-editor table { border-collapse: collapse; width: 100%; margin: 1rem 0; table-layout: fixed; }
+.tiptap-editor td, .tiptap-editor th { border: 2px solid #3f3f46; padding: 0.5rem 0.75rem; position: relative; vertical-align: top; min-width: 60px; }
+.tiptap-editor th { background: #1e1b4b; font-weight: 600; }
+.tiptap-editor td.selectedCell, .tiptap-editor th.selectedCell { background: color-mix(in srgb, #6366f1 25%, transparent); outline: 2px solid #6366f1; outline-offset: -2px; }
+.tiptap-editor .column-resize-handle { pointer-events: none; position: absolute; right: -2px; top: 0; bottom: -2px; width: 4px; background-color: #6366f1; }
 
 /* Code block copy button */
 .copy-code-btn {

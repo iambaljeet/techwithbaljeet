@@ -37,7 +37,9 @@ techwithbaljeet/
 │   │   ├── login/           # Firebase email/password login
 │   │   ├── dashboard/       # Post management table
 │   │   └── posts/           # new | [id]/edit
-│   ├── api/revalidate/      # Webhook to invalidate ISR cache
+│   ├── api/
+│   │   ├── revalidate/      # Webhook to invalidate ISR cache
+│   │   └── import-doc/      # File import (.docx/.doc/.md/.pdf → HTML)
 │   ├── rss.xml/             # RSS 2.0 feed (top 50 posts)
 │   ├── llms.txt/            # AI-friendly index (llmstxt.org)
 │   ├── sitemap.ts           # Dynamic XML sitemap with real lastModified
@@ -117,10 +119,23 @@ This navigates to `/admin/login`.
 1. Log into the admin panel
 2. Click **"New Post"**
 3. Fill in title, excerpt, cover image (upload), tags, content (TipTap WYSIWYG)
-4. Set **Status** to `Draft` or `Published`
-5. Click **Save**
+4. **Optionally import from a file** — click the **Import** button in the editor toolbar and upload a `.docx`, `.doc`, `.md`, or `.pdf` file. The content (including tables, code blocks, text formatting, lists, and images) is extracted and loaded into the editor.
+5. Set **Status** to `Draft` or `Published`
+6. Click **Save**
 
 When saving a published post, the ISR cache is automatically invalidated — changes appear on the live site on the next request.
+
+### Importing from a file
+
+Click **Import** (↑ icon) in the editor toolbar. Supported formats and what's preserved:
+
+| Format | Tables | Code blocks | Formatting | Images |
+|--------|--------|-------------|------------|--------|
+| `.docx` / `.doc` | ✅ | ✅ (if styled as Code) | ✅ bold/italic/headings/lists | ✅ embedded as base64 |
+| `.md` | ✅ (pipe tables) | ✅ (fenced ``` blocks) | ✅ full GFM | ✅ linked images |
+| `.pdf` | ⚠️ text only | ⚠️ detected by indentation | ⚠️ basic paragraphs/headings | ❌ not extractable |
+
+After import you can freely edit the content in the WYSIWYG editor before saving.
 
 ---
 
